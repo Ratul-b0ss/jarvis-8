@@ -152,4 +152,10 @@ if __name__ == '__main__':
     logger.info(f"🔊 TTS Available: {is_tts_available()}")
     logger.info("=" * 50)
     
-    socketio.run(app, host=host, port=port, debug=debug, allow_unsafe_werkzeug=True)
+    # Try SocketIO with eventlet first, fallback to standard Flask server
+    try:
+        socketio.run(app, host=host, port=port, debug=debug, allow_unsafe_werkzeug=True)
+    except Exception as e:
+        logger.warning(f"SocketIO failed to start: {e}")
+        logger.warning("Falling back to standard Flask server (REST API mode)")
+        app.run(host=host, port=port, debug=debug)

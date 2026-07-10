@@ -17,7 +17,7 @@ from datetime import datetime
 from typing import Optional
 
 # --- Configuration ---
-DEFAULT_MODE = "mock"  # "mock", "openai", or "ollama"
+DEFAULT_MODE = "openrouter"  # "mock", "openai", "ollama", or "openrouter"
 
 # Conversation memory
 conversation_history = []
@@ -190,7 +190,51 @@ def openai_brain(user_input: str) -> Optional[str]:
 
 
 # ============================================================
-# 3. OLLAMA BRAIN - Uses local LLM
+# 3. OPENROUTER BRAIN - Uses OpenRouter API (OpenAI-compatible)
+# ============================================================
+
+def openrouter_brain(user_input: str) -> Optional[str]:
+    """Query OpenRouter API (OpenAI-compatible, many free models)."""
+    try:
+        import requests
+        api_key = os.getenv("OPENROUTER_API_KEY")
+        if not api_key:
+            return None
+        
+        model = os.getenv("OPENROUTER_MODEL", "openrouter/free")
+        
+        messages = [{"role": "system", "content": jarvis_personality}]
+        for msg in conversation_history[-MAX_HISTORY:]:
+            messages.append(msg)
+        messages.append({"role": "user", "content": user_input})
+        
+        response = requests.post(
+            "https://openrouter.ai/api/v1/chat/completions",
+            headers={
+                "Authorization": f"Bearer {api_key}",
+                "Content-Type": "application/json",
+                "HTTP-Referer": "http://localhost:5000",
+                "X-Title": "J.A.R.V.I.S. Assistant"
+            },
+            json={
+                "model": model,
+                "messages": messages,
+                "max_tokens": 500,
+                "temperature": 0.7
+            },
+            timeout=30
+        )
+        
+        if response.status_code == 200:
+            return response.json()["choices"][0]["message"]["content"]
+        else:
+            return f"OpenRouter returned an error (HTTP {response.status_code}). Try again or switch to mock mode."
+    except Exception as e:
+        return f"I encountered an error connecting to OpenRouter: {str(e)}"
+
+
+# ============================================================
+# 4. OLLAMA BRAIN - Uses local LLM
 # ============================================================
 
 def ollama_brain(user_input: str) -> Optional[str]:
@@ -231,6 +275,8 @@ def process_input(user_input: str, mode: str = None) -> str:
     
     if mode == "openai":
         response = openai_brain(user_input)
+    elif mode == "openrouter":
+        response = openrouter_brain(user_input)
     elif mode == "ollama":
         response = ollama_brain(user_input)
     
