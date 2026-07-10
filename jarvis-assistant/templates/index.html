@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>J.A.R.V.I.S. — AI Assistant</title>
+    
+    <!-- Socket.IO client -->
+    <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+    
+    <!-- Styles -->
+    <link rel="stylesheet" href="/static/css/style.css">
+    
+    <!-- Favicon (simple SVG) -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🤖</text></svg>">
+</head>
+<body>
+    <!-- Background -->
+    <canvas id="bgCanvas" class="background-canvas"></canvas>
+    <div class="background-overlay"></div>
+    <div class="hud-grid"></div>
+    
+    <!-- Toast notification -->
+    <div id="toast" class="toast"></div>
+
+    <!-- Main App Container -->
+    <div class="app-container">
+        
+        <!-- ===== HUD HEADER ===== -->
+        <header class="hud-header">
+            <div class="logo-section">
+                <div class="logo-icon">✦</div>
+                <div>
+                    <div class="logo-text">J.A.R.V.I.S.</div>
+                    <div class="logo-subtitle">Just A Rather Very Intelligent System</div>
+                </div>
+            </div>
+            
+            <div class="hud-status">
+                <div class="status-item">
+                    <span class="status-dot"></span>
+                    <span id="statusText">INITIALIZING</span>
+                </div>
+                <div class="status-item">
+                    <span>🎤</span>
+                    <span id="voiceSupportText">VOICE: CHECK</span>
+                </div>
+                <div class="status-item">
+                    <button id="clearBtn" class="btn btn-clear" title="Clear conversation">
+                        ✕ CLEAR
+                    </button>
+                </div>
+            </div>
+        </header>
+        
+        <!-- ===== MAIN CHAT AREA ===== -->
+        <main class="chat-main">
+            
+            <!-- Messages -->
+            <div id="chatMessages" class="chat-messages">
+                
+                <!-- Welcome Screen -->
+                <div id="welcomeScreen" class="welcome-screen">
+                    <div class="welcome-orb">
+                        <div class="orb-inner"></div>
+                        <div class="orb-rings"></div>
+                    </div>
+                    
+                    <div class="welcome-title">J.A.R.V.I.S.</div>
+                    <div class="welcome-subtitle">
+                        Your intelligent AI assistant. <br>
+                        Ask me anything — I'm ready when you are.
+                    </div>
+                    
+                    <div class="welcome-hints">
+                        <span class="hint-badge">⌨ Type a message</span>
+                        <span class="hint-badge">🎤 Press mic to speak</span>
+                        <span class="hint-badge">🔊 I'll talk back</span>
+                        <span class="hint-badge">✦ Say "Hello"</span>
+                    </div>
+                </div>
+                
+                <!-- Typing Indicator -->
+                <div id="typingIndicator" class="typing-indicator message jarvis">
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                </div>
+            </div>
+            
+            <!-- Transcription Overlay -->
+            <div id="transcriptionOverlay" class="transcription-overlay"></div>
+            
+            <!-- Voice Status -->
+            <div id="voiceStatus" class="voice-status"></div>
+            
+            <!-- ===== INPUT AREA ===== -->
+            <div class="input-area">
+                <div class="input-container">
+                    <!-- Mic Button -->
+                    <button id="micBtn" class="btn btn-mic" title="Voice input (requires microphone)">
+                        <span>🎤</span>
+                        <div id="voiceWaveform" class="voice-waveform">
+                            <span class="wave-bar"></span>
+                            <span class="wave-bar"></span>
+                            <span class="wave-bar"></span>
+                            <span class="wave-bar"></span>
+                            <span class="wave-bar"></span>
+                            <span class="wave-bar"></span>
+                            <span class="wave-bar"></span>
+                            <span class="wave-bar"></span>
+                        </div>
+                    </button>
+                    
+                    <!-- Text Input -->
+                    <input 
+                        type="text" 
+                        id="textInput" 
+                        class="text-input" 
+                        placeholder="Type your message here, sir..."
+                        autocomplete="off"
+                        autofocus
+                    >
+                    
+                    <!-- Send Button -->
+                    <button id="sendBtn" class="btn btn-send" title="Send message">
+                        <span>➤</span>
+                    </button>
+                </div>
+            </div>
+            
+        </main>
+    </div>
+    
+    <!-- Scripts -->
+    <script src="/static/js/voice.js"></script>
+    <script src="/static/js/main.js"></script>
+    
+    <!-- Inline audio context check -->
+    <script>
+        // Update voice support text
+        document.addEventListener('DOMContentLoaded', () => {
+            const voiceSupport = document.getElementById('voiceSupportText');
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (SpeechRecognition) {
+                voiceSupport.textContent = 'VOICE: READY';
+                voiceSupport.style.color = 'var(--accent)';
+            } else {
+                voiceSupport.textContent = 'VOICE: UNAVAILABLE';
+                voiceSupport.style.color = 'var(--danger)';
+            }
+        });
+    </script>
+</body>
+</html>
